@@ -10,9 +10,11 @@ import (
 
 var (
 	baseChars        = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/")
-	// ErrorInvalidChar is when a snowflake is when the string being parsed contains a character outside the allowed
-	// range (i.e. a-zA-Z0-9+/ for Base64)
-	ErrorInvalidChar = errors.New("invalid character")
+	// ParseError is when a snowflake is when the string being parsed contains a character outside the allowed
+	// range (i.e. a-zA-Z0-9+/ for ParseBase64 or 0-9 for ParseString)
+	ParseError = errors.New("invalid character")
+	// JSONUnmarshalError is when there is an error unmarshalling a Snowflake
+	JSONUnmarshalError = &json.InvalidUnmarshalError{Type: reflect.TypeOf(Snowflake(0))}
 )
 
 // Snowflake is a 63-bit integer made up of 3 parts - a timestamp, Node ID and a sequence ID which is calculated by the
@@ -47,12 +49,15 @@ func (s Snowflake) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is the implementation of json.Unmarshaler
 func (s *Snowflake) UnmarshalJSON(b []byte) error {
-	if b[0] != '"' || b[len(b)-1] != '"' || len(b) <= 2 {
-		return &json.InvalidUnmarshalError{Type: reflect.TypeOf(s)}
+	if len(b) <= 2 || b[0] != '"' || b[len(b)-1] != '"'  {
+		return JSONUnmarshalError
 	}
 	i, err := strconv.ParseInt(string(b[1:len(b)-1]), 10, 64)
 	*s = Snowflake(i)
-	return err
+	if err != nil {
+		return JSONUnmarshalError
+	}
+	return nil
 }
 
 //reverse reverses a string.
@@ -85,7 +90,7 @@ func ParseBase64(s string) (Snowflake, error) {
 		} else if c == '/' {
 			j = 63
 		} else { // The character was not a valid 64th base character [1-9a-zA-Z+/]
-			return 0, ErrorInvalidChar
+			return 0, ParseError
 		}
 		val += currentMultiplier * int64(j)
 		currentMultiplier *= 64
@@ -95,5 +100,8 @@ func ParseBase64(s string) (Snowflake, error) {
 
 func ParseString(s string) (Snowflake, error) {
 	i, err := strconv.ParseInt(s, 10, 64)
-	return Snowflake(i), err
+	if err != nil {
+		return Snowflake(0), ParseError
+	}
+	return Snowflake(i), nil
 }

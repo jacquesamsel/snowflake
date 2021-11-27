@@ -1,6 +1,7 @@
 package snowflake
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -58,7 +59,7 @@ func TestParseBase64(t *testing.T) {
 	})
 	t.Run("invalid", func(t *testing.T) {
 		_, err := ParseString("4294967296a.")
-		if err == nil {
+		if !errors.Is(err, ParseError) {
 			t.Fail()
 		}
 	})
@@ -118,7 +119,7 @@ func TestParseString(t *testing.T) {
 	})
 	t.Run("invalid", func(t *testing.T) {
 		_, err := ParseString("4294967296a")
-		if err == nil {
+		if !errors.Is(err, ParseError) {
 			t.Fail()
 		}
 	})
@@ -189,11 +190,21 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		}
 	})
 	t.Run("invalid", func(t *testing.T) {
-		var s Snowflake
-		err := s.UnmarshalJSON([]byte("\"4294967296a\""))
-		if err == nil {
-			t.Fail()
-		}
+		t.Run("short", func(t *testing.T) {
+			var s Snowflake
+			err := s.UnmarshalJSON([]byte("a"))
+			if !errors.Is(err, JSONUnmarshalError) {
+				t.Fail()
+			}
+		})
+		t.Run("char_outside_rng", func(t *testing.T) {
+			var s Snowflake
+			err := s.UnmarshalJSON([]byte("\"4294967296a\""))
+			if !errors.Is(err, JSONUnmarshalError) {
+				t.Fail()
+			}
+		})
+
 	})
 }
 
