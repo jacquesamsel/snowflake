@@ -10,6 +10,8 @@ import (
 
 var (
 	baseChars        = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/")
+	// ErrorInvalidChar is when a snowflake is when the string being parsed contains a character outside the allowed
+	// range (i.e. a-zA-Z0-9+/ for Base64)
 	ErrorInvalidChar = errors.New("invalid character")
 )
 
@@ -38,12 +40,12 @@ func (s Snowflake) String() string {
 	return strconv.FormatInt(int64(s), 10)
 }
 
-// MarshalJSON is the implementation of JSON.Marshaler
+// MarshalJSON is the implementation of json.Marshaler
 func (s Snowflake) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + s.String() + "\""), nil
 }
 
-// UnmarshalJSON is the implementation of JSON.Unmarshaler
+// UnmarshalJSON is the implementation of json.Unmarshaler
 func (s *Snowflake) UnmarshalJSON(b []byte) error {
 	if b[0] != '"' || b[len(b)-1] != '"' || len(b) <= 2 {
 		return &json.InvalidUnmarshalError{Type: reflect.TypeOf(s)}
