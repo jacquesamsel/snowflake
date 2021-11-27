@@ -11,7 +11,8 @@ var (
 	ErrorTimeOverflow = errors.New("time overflowed its bit allowance")
 	// ErrorNodeOverflow is when the Node ID overflows its bit allocation
 	ErrorNodeOverflow = errors.New("node ID overflowed its bit allowance")
-	// ErrorSnowflakeOverflow is when the Snowflake overflows its 63 allocated bits
+	// ErrorSnowflakeOverflow is when a Node is created with more than 63 total bits allocated to time, node, and
+	// counter
 	ErrorSnowflakeOverflow = errors.New("total bits allocated is greater than 63")
 )
 
