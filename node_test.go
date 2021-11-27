@@ -2,32 +2,43 @@ package snowflake
 
 import (
 	"errors"
-	"github.com/bmizerany/assert"
 	"testing"
 	"time"
 )
 
 func TestNewNode(t *testing.T) {
 	_, err := NewNode(0, time.Now(), 42, 5, 16)
-	assert.Equal(t, nil, err)
+	if err != nil {
+		t.Error(err)
+	}
 	_, err = NewNode(0, time.Now(), 43, 5, 16)
-	assert.T(t, errors.Is(err, ErrorSnowflakeOverflow))
+	if !errors.Is(err, ErrorSnowflakeOverflow) {
+		t.Fail()
+	}
 	_, err = NewNode(33, time.Now(), 42, 5, 16)
-	assert.T(t, errors.Is(err, ErrorNodeOverflow))
+	if !errors.Is(err, ErrorNodeOverflow) {
+		t.Fail()
+	}
 }
 
 func TestNode_Generate(t *testing.T) {
 	node, err := NewNode(0, time.Now(), 42, 2, 19)
-	assert.Equal(t, nil, err)
+	if err != nil {
+		t.Error(err)
+	}
 	t.Run("single", func(t *testing.T) {
 		id := node.Generate()
-		assert.NotEqual(t, id, 0)
+		if id == 0 {
+			t.Fail()
+		}
 	})
 	t.Run("uniqueness", func(t *testing.T) {
 		var x, y Snowflake
 		for i := 0; i < 1e6; i++ {
 			x, y = y, node.Generate()
-			assert.NotEqual(t, x, y)
+			if x == y {
+				t.Fail()
+			}
 		}
 	})
 }
