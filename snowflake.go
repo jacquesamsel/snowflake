@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 )
 
 var (
@@ -64,8 +63,8 @@ func (s *Snowflake) UnmarshalJSON(b []byte) error {
 //reverse reverses a string.
 func reverse(s string) string {
 	var sb strings.Builder
-	sb.Grow(utf8.RuneCountInString(s))
 	str := []rune(s)
+	sb.Grow(len(str))
 	for i := range str {
 		sb.WriteRune(str[len(str)-1-i])
 	}
