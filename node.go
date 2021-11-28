@@ -42,6 +42,7 @@ func NewNode(nodeID uint32, epoch time.Time, timeBits, nodeBits, counterBits uin
 	}
 	n := &Node{}
 	n.mutex.Lock() // Do not allow ID generation during setup
+	defer n.mutex.Unlock()
 	now := time.Now()
 	n.epoch = now.Add(epoch.Sub(now)) // force monotonic clock usage to avoid
 	n.id = int64(nodeID)
@@ -59,7 +60,6 @@ func NewNode(nodeID uint32, epoch time.Time, timeBits, nodeBits, counterBits uin
 	if int64(nodeID) > n.maxNode {
 		return nil, ErrorNodeOverflow
 	}
-	n.mutex.Unlock()
 	return n, nil
 }
 

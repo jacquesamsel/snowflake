@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	baseChars        = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/")
+	baseChars = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/")
 	// ParseError is when a snowflake is when the string being parsed contains a character outside the allowed
 	// range (i.e. a-zA-Z0-9+/ for ParseBase64 or 0-9 for ParseString)
 	ParseError = errors.New("invalid character")
@@ -49,7 +49,7 @@ func (s Snowflake) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is the implementation of json.Unmarshaler
 func (s *Snowflake) UnmarshalJSON(b []byte) error {
-	if len(b) <= 2 || b[0] != '"' || b[len(b)-1] != '"'  {
+	if len(b) <= 2 || b[0] != '"' || b[len(b)-1] != '"' {
 		return JSONUnmarshalError
 	}
 	i, err := strconv.ParseInt(string(b[1:len(b)-1]), 10, 64)
@@ -64,6 +64,7 @@ func (s *Snowflake) UnmarshalJSON(b []byte) error {
 func reverse(s string) string {
 	var sb strings.Builder
 	str := []rune(s)
+	sb.Grow(len(str))
 	for i := range str {
 		sb.WriteRune(str[len(str)-1-i])
 	}
