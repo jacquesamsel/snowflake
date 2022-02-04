@@ -1,6 +1,7 @@
 package snowflake
 
 import (
+	"bytes"
 	"errors"
 	"testing"
 )
@@ -63,6 +64,14 @@ func TestParseBase64(t *testing.T) {
 			t.Fail()
 		}
 	})
+}
+
+func TestSnowflake_Uint64(t *testing.T) {
+	s := Snowflake(maxValueBits(63))
+
+	if Snowflake(s.Uint64()) != s {
+		t.Fail()
+	}
 }
 
 func TestSnowflake_String(t *testing.T) {
@@ -206,6 +215,31 @@ func TestSnowflake_UnmarshalJSON(t *testing.T) {
 		})
 
 	})
+}
+
+func TestSnowflake_MarshalBinary(t *testing.T) {
+	s := Snowflake(maxValueBits(63))
+	bin, err := s.MarshalBinary()
+	if err != nil {
+		t.Error(err)
+	}
+	exp := []byte{127, 255, 255, 255, 255, 255, 255, 255}
+	if !bytes.Equal(bin, exp) {
+		t.Errorf("got %v expected %v", bin, exp)
+	}
+}
+
+func TestSnowflake_UnmarshalBinary(t *testing.T) {
+	in := []byte{127, 255, 255, 255, 255, 255, 255, 255}
+	got := Snowflake(0)
+	err := got.UnmarshalBinary(in)
+	if err != nil {
+		t.Error(err)
+	}
+	exp := Snowflake(maxValueBits(63))
+	if got != exp {
+		t.Errorf("got %v expected %v", got, exp)
+	}
 }
 
 func BenchmarkParseBase64(b *testing.B) {

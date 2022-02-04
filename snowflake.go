@@ -1,6 +1,7 @@
 package snowflake
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"reflect"
@@ -37,6 +38,10 @@ func (s Snowflake) Base64() string {
 	return reverse(sb.String())
 }
 
+func (s Snowflake) Uint64() uint64 {
+	return uint64(s)
+}
+
 // String converts the Snowflake to a base-10 string
 func (s Snowflake) String() string {
 	return strconv.FormatInt(int64(s), 10)
@@ -57,6 +62,17 @@ func (s *Snowflake) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return JSONUnmarshalError
 	}
+	return nil
+}
+
+func (s *Snowflake) MarshalBinary() ([]byte, error) {
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(*s))
+	return buf, nil
+}
+
+func (s *Snowflake) UnmarshalBinary(buf []byte) error {
+	*s = Snowflake(binary.BigEndian.Uint64(buf))
 	return nil
 }
 
